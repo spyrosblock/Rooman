@@ -6,6 +6,7 @@ A application for hotels or airbnb owners to show the availability of their room
   - Room Availability
   - Some images
   - Call to action: call the owner and book a room
+  - TODO: when user selects date show all available room names
 - Login page
   - Username
   - Password (sha-256 hashed)
