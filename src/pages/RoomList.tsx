@@ -4,11 +4,11 @@ import { Link as RouterLink } from 'react-router-dom'
 import NavBar from '../components/NavBar'
 
 const rooms = [
-  { id: 1, name: 'Deluxe Sea View', type: 'Double', floor: 2, price: 180, capacity: 2, available: true },
-  { id: 2, name: 'Standard Garden Room', type: 'Twin', floor: 1, price: 120, capacity: 2, available: true },
-  { id: 3, name: 'Presidential Suite', type: 'Suite', floor: 3, price: 350, capacity: 4, available: false },
-  { id: 4, name: 'Family Room', type: 'Quad', floor: 1, price: 200, capacity: 4, available: true },
-  { id: 5, name: 'Cozy Single', type: 'Single', floor: 2, price: 80, capacity: 1, available: true },
+  { id: 1, name: 'Deluxe Sea View', type: 'Double', floor: 2, price: 180, capacity: 2 },
+  { id: 2, name: 'Standard Garden Room', type: 'Twin', floor: 1, price: 120, capacity: 2 },
+  { id: 3, name: 'Presidential Suite', type: 'Suite', floor: 3, price: 350, capacity: 4 },
+  { id: 4, name: 'Family Room', type: 'Quad', floor: 1, price: 200, capacity: 4 },
+  { id: 5, name: 'Cozy Single', type: 'Single', floor: 2, price: 80, capacity: 1 },
 ]
 
 export default function RoomList() {
@@ -51,18 +51,6 @@ export default function RoomList() {
                   <Typography variant="h6" sx={{ fontWeight: 500, fontSize: '1.1rem' }}>
                     {room.name}
                   </Typography>
-                  <Chip
-                    label={room.available ? 'Available' : 'Booked'}
-                    size="small"
-                    sx={{
-                      fontSize: '0.7rem',
-                      color: room.available ? '#22c55e' : '#ef4444',
-                      bgcolor: room.available ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-                      border: (theme) =>
-                        `1px solid ${room.available ? '#22c55e40' : '#ef444440'}`,
-                      fontWeight: 500,
-                    }}
-                  />
                 </Box>
 
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>

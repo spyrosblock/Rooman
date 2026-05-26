@@ -4,11 +4,11 @@ import { Link as RouterLink, useParams } from 'react-router-dom'
 import NavBar from '../components/NavBar'
 
 const rooms = [
-  { id: 1, name: 'Deluxe Sea View', type: 'Double', floor: 2, price: 180, capacity: 2, available: true, description: 'Spacious double room with panoramic sea views. Features a king-size bed, private balcony, and en-suite bathroom with rainfall shower.' },
-  { id: 2, name: 'Standard Garden Room', type: 'Twin', floor: 1, price: 120, capacity: 2, available: true, description: 'Comfortable twin room overlooking our lush gardens. Includes two single beds, work desk, and garden access.' },
-  { id: 3, name: 'Presidential Suite', type: 'Suite', floor: 3, price: 350, capacity: 4, available: false, description: 'Our finest suite with separate living area, master bedroom, and guest bathroom. Features a jacuzzi and panoramic views.' },
-  { id: 4, name: 'Family Room', type: 'Quad', floor: 1, price: 200, capacity: 4, available: true, description: 'Perfect for families. Features one double bed and two single beds, plus a small kitchenette.' },
-  { id: 5, name: 'Cozy Single', type: 'Single', floor: 2, price: 80, capacity: 1, available: true, description: 'Compact and cozy single room ideal for solo travelers. Includes a comfortable single bed and en-suite bathroom.' },
+  { id: 1, name: 'Deluxe Sea View', type: 'Double', floor: 2, price: 180, capacity: 2, description: 'Spacious double room with panoramic sea views. Features a king-size bed, private balcony, and en-suite bathroom with rainfall shower.' },
+  { id: 2, name: 'Standard Garden Room', type: 'Twin', floor: 1, price: 120, capacity: 2, description: 'Comfortable twin room overlooking our lush gardens. Includes two single beds, work desk, and garden access.' },
+  { id: 3, name: 'Presidential Suite', type: 'Suite', floor: 3, price: 350, capacity: 4, description: 'Our finest suite with separate living area, master bedroom, and guest bathroom. Features a jacuzzi and panoramic views.' },
+  { id: 4, name: 'Family Room', type: 'Quad', floor: 1, price: 200, capacity: 4, description: 'Perfect for families. Features one double bed and two single beds, plus a small kitchenette.' },
+  { id: 5, name: 'Cozy Single', type: 'Single', floor: 2, price: 80, capacity: 1, description: 'Compact and cozy single room ideal for solo travelers. Includes a comfortable single bed and en-suite bathroom.' },
 ]
 
 export default function RoomDetail() {
@@ -63,17 +63,6 @@ export default function RoomDetail() {
                 <Chip label={`Up to ${room.capacity} guests`} size="small" variant="outlined" />
               </Box>
             </Box>
-            <Chip
-              label={room.available ? 'Available' : 'Booked'}
-              sx={{
-                color: room.available ? '#22c55e' : '#ef4444',
-                bgcolor: room.available ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-                border: (theme) => `1px solid ${room.available ? '#22c55e40' : '#ef444440'}`,
-                fontWeight: 500,
-                fontSize: '0.85rem',
-                py: 1.5,
-              }}
-            />
           </Box>
 
           <Divider sx={{ mb: 3 }} />

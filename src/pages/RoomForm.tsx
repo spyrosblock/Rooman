@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react'
 import {
-  Box, Container, Typography, Paper, Button, TextField, MenuItem, FormControlLabel, Switch
+  Box, Container, Typography, Paper, Button, TextField, MenuItem
 } from '@mui/material'
 import { ArrowBack, Save } from '@mui/icons-material'
 import { Link as RouterLink, useParams, useNavigate } from 'react-router-dom'
 import NavBar from '../components/NavBar'
 
 const rooms = [
-  { id: 1, name: 'Deluxe Sea View', type: 'Double', floor: 2, price: 180, capacity: 2, available: true, description: 'Spacious double room with panoramic sea views. Features a king-size bed, private balcony, and en-suite bathroom with rainfall shower.' },
-  { id: 2, name: 'Standard Garden Room', type: 'Twin', floor: 1, price: 120, capacity: 2, available: true, description: 'Comfortable twin room overlooking our lush gardens. Includes two single beds, work desk, and garden access.' },
-  { id: 3, name: 'Presidential Suite', type: 'Suite', floor: 3, price: 350, capacity: 4, available: false, description: 'Our finest suite with separate living area, master bedroom, and guest bathroom. Features a jacuzzi and panoramic views.' },
-  { id: 4, name: 'Family Room', type: 'Quad', floor: 1, price: 200, capacity: 4, available: true, description: 'Perfect for families. Features one double bed and two single beds, plus a small kitchenette.' },
-  { id: 5, name: 'Cozy Single', type: 'Single', floor: 2, price: 80, capacity: 1, available: true, description: 'Compact and cozy single room ideal for solo travelers. Includes a comfortable single bed and en-suite bathroom.' },
+  { id: 1, name: 'Deluxe Sea View', type: 'Double', floor: 2, price: 180, capacity: 2, description: 'Spacious double room with panoramic sea views. Features a king-size bed, private balcony, and en-suite bathroom with rainfall shower.' },
+  { id: 2, name: 'Standard Garden Room', type: 'Twin', floor: 1, price: 120, capacity: 2, description: 'Comfortable twin room overlooking our lush gardens. Includes two single beds, work desk, and garden access.' },
+  { id: 3, name: 'Presidential Suite', type: 'Suite', floor: 3, price: 350, capacity: 4, description: 'Our finest suite with separate living area, master bedroom, and guest bathroom. Features a jacuzzi and panoramic views.' },
+  { id: 4, name: 'Family Room', type: 'Quad', floor: 1, price: 200, capacity: 4, description: 'Perfect for families. Features one double bed and two single beds, plus a small kitchenette.' },
+  { id: 5, name: 'Cozy Single', type: 'Single', floor: 2, price: 80, capacity: 1, description: 'Compact and cozy single room ideal for solo travelers. Includes a comfortable single bed and en-suite bathroom.' },
 ]
 
 const roomTypes = ['Single', 'Double', 'Twin', 'Suite', 'Quad']
@@ -27,7 +27,6 @@ export default function RoomForm() {
   const [floor, setFloor] = useState(1)
   const [price, setPrice] = useState(100)
   const [capacity, setCapacity] = useState(2)
-  const [available, setAvailable] = useState(true)
   const [description, setDescription] = useState('')
 
   useEffect(() => {
@@ -37,7 +36,6 @@ export default function RoomForm() {
       setFloor(existingRoom.floor)
       setPrice(existingRoom.price)
       setCapacity(existingRoom.capacity)
-      setAvailable(existingRoom.available)
       setDescription(existingRoom.description)
     }
   }, [existingRoom])
@@ -132,16 +130,6 @@ export default function RoomForm() {
               multiline
               rows={3}
               fullWidth
-            />
-
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={available}
-                  onChange={(e) => setAvailable(e.target.checked)}
-                />
-              }
-              label="Available for booking"
             />
 
             <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
