@@ -11,7 +11,6 @@ import {
   IconButton,
 } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
-import { motion } from 'motion/react'
 import { Link as RouterLink } from 'react-router-dom'
 
 export default function Login() {
@@ -37,10 +36,20 @@ export default function Login() {
       }}
     >
       <Container maxWidth="sm">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+        <Box
+          sx={{
+            '@keyframes fadeSlideIn': {
+              from: {
+                opacity: 0,
+                transform: 'translateY(20px)',
+              },
+              to: {
+                opacity: 1,
+                transform: 'translateY(0)',
+              },
+            },
+            animation: 'fadeSlideIn 0.6s ease-out',
+          }}
         >
           <Paper
             elevation={0}
@@ -148,7 +157,7 @@ export default function Login() {
               </Link>
             </Box>
           </Paper>
-        </motion.div>
+        </Box>
       </Container>
     </Box>
   )
