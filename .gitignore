@@ -1,0 +1,39 @@
+# Environment files (actual values, not examples)
+.env
+
+## Specific .env files (to be explicit)
+backend/.env
+db/postgres/.env
+db/pgadmin/.env
+
+# Keep .env.example files
+# !.env.example
+# !db/postgres/.env.example
+# !db/pgadmin/.env.example
+
+# Java / Maven
+backend/target/
+*.class
+*.jar
+*.war
+*.log
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
