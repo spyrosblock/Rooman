@@ -42,8 +42,8 @@ export default function Login() {
 
     if (!password) {
       errs.password = 'Password is required'
-    } else if (password.length < 6) {
-      errs.password = 'Password must be at least 6 characters'
+    } else if (password.length < 5) {
+      errs.password = 'Password must be at least 5 characters'
     }
 
     return errs
