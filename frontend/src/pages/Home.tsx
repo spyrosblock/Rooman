@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Box, Container, Typography, Paper, Fade, CircularProgress, Chip } from '@mui/material'
+import { Link as RouterLink } from 'react-router-dom'
 import { keyframes } from '@emotion/react'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs, { Dayjs } from 'dayjs'
@@ -75,6 +76,27 @@ export default function Home() {
             filter: 'brightness(0.65)',
           }}
         />
+        <Box
+          component={RouterLink}
+          to="/rooms"
+          sx={{
+            position: 'absolute',
+            top: 16,
+            right: 20,
+            color: 'rgba(255,255,255,0.3)',
+            fontSize: '0.7rem',
+            letterSpacing: '1px',
+            textDecoration: 'none',
+            cursor: 'pointer',
+            zIndex: 1,
+            transition: 'color 0.2s',
+            '&:hover': {
+              color: 'rgba(255,255,255,0.7)',
+            },
+          }}
+        >
+          admin
+        </Box>
         <Box
           sx={{
             position: 'absolute',
