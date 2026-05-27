@@ -11,12 +11,12 @@ import java.util.List;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
-    List<Booking> findByRoomId(Integer roomId);
-    List<Booking> findByEmail(String email);
-    List<Booking> findByStatus(String status);
 
     @Query("SELECT b FROM Booking b WHERE b.roomId = :roomId AND b.checkIn < :checkOut AND b.checkOut > :checkIn")
     List<Booking> findConflictingBookings(@Param("roomId") Integer roomId,
                                           @Param("checkIn") LocalDate checkIn,
                                           @Param("checkOut") LocalDate checkOut);
+
+    @Query("SELECT DISTINCT b.roomId FROM Booking b WHERE b.checkIn <= :date AND b.checkOut > :date AND b.status <> 'cancelled'")
+    List<Integer> findBookedRoomIdsOnDate(@Param("date") LocalDate date);
 }

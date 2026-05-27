@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -24,16 +25,17 @@ public class RoomController {
         return ResponseEntity.ok(roomService.findAll());
     }
 
+    @GetMapping("/available")
+    public ResponseEntity<List<Room>> getAvailableRooms(@RequestParam("date") String date) {
+        LocalDate localDate = LocalDate.parse(date);
+        return ResponseEntity.ok(roomService.findAvailableRooms(localDate));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Room> getRoomById(@PathVariable Integer id) {
         return roomService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/type/{type}")
-    public ResponseEntity<List<Room>> getRoomsByType(@PathVariable String type) {
-        return ResponseEntity.ok(roomService.findByType(type));
     }
 
     @PostMapping

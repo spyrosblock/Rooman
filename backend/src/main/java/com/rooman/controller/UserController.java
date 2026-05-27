@@ -1,70 +1,62 @@
 package com.rooman.controller;
 
 import com.rooman.model.User;
+import com.rooman.security.JwtAuthenticationFilter;
+import com.rooman.security.JwtUtil;
 import com.rooman.service.UserService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
-    @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.findAll());
-    }
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Boolean>> login(
+            @RequestBody Map<String, String> credentials,
+            HttpServletResponse response) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
-        return userService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/email/{email}")
-    public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
-        return userService.findByEmail(email)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
-        try {
-            User created = userService.create(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+        if (email == null || password == null) {
+            return ResponseEntity.badRequest().body(Map.of("success", false));
         }
+
+        boolean success = userService.login(email, password);
+        if (success) {
+            String token = jwtUtil.generateToken(email);
+            JwtAuthenticationFilter.addTokenCookie(response, token);
+            return ResponseEntity.ok(Map.of("success", true));
+        }
+
+        return ResponseEntity.ok(Map.of("success", false));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody User user) {
-        try {
-            User updated = userService.update(id, user);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        JwtAuthenticationFilter.removeTokenCookie(response);
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
-        try {
-            userService.delete(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+    @GetMapping("/me")
+    public ResponseEntity<User> currentUser() {
+        // The authenticated user is set in the security context by the filter
+        Object principal = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User user) {
+            return ResponseEntity.ok(user);
         }
+        return ResponseEntity.status(401).build();
     }
 }

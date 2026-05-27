@@ -1,19 +1,24 @@
 package com.rooman.service;
 
 import com.rooman.model.Room;
+import com.rooman.repository.BookingRepository;
 import com.rooman.repository.RoomRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RoomService {
 
     private final RoomRepository roomRepository;
+    private final BookingRepository bookingRepository;
 
-    public RoomService(RoomRepository roomRepository) {
+    public RoomService(RoomRepository roomRepository, BookingRepository bookingRepository) {
         this.roomRepository = roomRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     public List<Room> findAll() {
@@ -24,8 +29,11 @@ public class RoomService {
         return roomRepository.findById(id);
     }
 
-    public List<Room> findByType(String type) {
-        return roomRepository.findByType(type);
+    public List<Room> findAvailableRooms(LocalDate date) {
+        List<Integer> bookedRoomIds = bookingRepository.findBookedRoomIdsOnDate(date);
+        return roomRepository.findAll().stream()
+                .filter(room -> !bookedRoomIds.contains(room.getId()))
+                .collect(Collectors.toList());
     }
 
     public Room create(Room room) {

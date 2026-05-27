@@ -1,6 +1,7 @@
 package com.rooman.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -47,6 +48,7 @@ public class Booking {
     private Integer guests;
 
     @NotBlank
+    @Email
     @Column(nullable = false)
     private String email;
 
@@ -61,7 +63,7 @@ public class Booking {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id", insertable = false, updatable = false)
     private Room room;
 

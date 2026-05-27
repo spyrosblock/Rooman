@@ -25,18 +25,6 @@ public class BookingService {
         return bookingRepository.findById(id);
     }
 
-    public List<Booking> findByRoomId(Integer roomId) {
-        return bookingRepository.findByRoomId(roomId);
-    }
-
-    public List<Booking> findByEmail(String email) {
-        return bookingRepository.findByEmail(email);
-    }
-
-    public List<Booking> findByStatus(String status) {
-        return bookingRepository.findByStatus(status);
-    }
-
     public Booking create(Booking booking) {
         if (booking.getCheckIn() == null || booking.getCheckOut() == null) {
             throw new IllegalArgumentException("Check-in and check-out dates are required");

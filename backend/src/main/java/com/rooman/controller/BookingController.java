@@ -31,21 +31,6 @@ public class BookingController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/room/{roomId}")
-    public ResponseEntity<List<Booking>> getBookingsByRoomId(@PathVariable Integer roomId) {
-        return ResponseEntity.ok(bookingService.findByRoomId(roomId));
-    }
-
-    @GetMapping("/email/{email}")
-    public ResponseEntity<List<Booking>> getBookingsByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(bookingService.findByEmail(email));
-    }
-
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<Booking>> getBookingsByStatus(@PathVariable String status) {
-        return ResponseEntity.ok(bookingService.findByStatus(status));
-    }
-
     @PostMapping
     public ResponseEntity<Booking> createBooking(@Valid @RequestBody Booking booking) {
         try {
@@ -57,7 +42,7 @@ public class BookingController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Booking> updateBooking(@PathVariable Integer id, @RequestBody Booking booking) {
+    public ResponseEntity<Booking> updateBooking(@PathVariable Integer id, @Valid @RequestBody Booking booking) {
         try {
             Booking updated = bookingService.update(id, booking);
             return ResponseEntity.ok(updated);
