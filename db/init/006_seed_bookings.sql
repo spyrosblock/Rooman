@@ -1,0 +1,15 @@
+INSERT INTO bookings (guest_name, room_id, check_in, check_out, status, total, guests, email, phone, notes) VALUES
+('John Smith',     1, '2026-06-01', '2026-06-03', 'confirmed',  100.00, 1, 'john.smith@email.com',      '+30 690 111 2222', 'Early check-in requested'),
+('Maria Papadou',  2, '2026-06-05', '2026-06-08', 'confirmed',  165.00, 1, 'maria.p@email.com',         '+30 690 333 4444', NULL),
+('George Karas',   3, '2026-06-10', '2026-06-12', 'pending',    160.00, 2, 'george.k@email.com',        '+30 690 555 6666', 'Extra pillows please'),
+('Eleni Nikou',    4, '2026-06-15', '2026-06-18', 'confirmed',  255.00, 2, 'eleni.n@email.com',         '+30 690 777 8888', 'Anniversary trip'),
+('Dimitris Pappas',5, '2026-06-20', '2026-06-23', 'pending',    450.00, 3, 'dimitris.p@email.com',      '+30 690 999 0000', NULL),
+('Sophia Alexiou', 6, '2026-06-25', '2026-06-28', 'cancelled',  540.00, 4, 'sophia.a@email.com',        '+30 691 111 2222', 'Cancelled due to flight issues'),
+('Nikos Georgiou', 1, '2026-07-01', '2026-07-05', 'confirmed',  200.00, 1, 'nikos.g@email.com',         '+30 691 333 4444', NULL),
+('Anna Kostopoulou',2, '2026-07-03', '2026-07-06', 'confirmed',  165.00, 1, 'anna.k@email.com',          '+30 691 555 6666', 'Allergic to feathers'),
+('Petros Makris',  3, '2026-07-10', '2026-07-12', 'pending',    160.00, 2, 'petros.m@email.com',        '+30 691 777 8888', 'Late arrival around 10 PM'),
+('Katerina Lala',  4, '2026-07-14', '2026-07-16', 'confirmed',  170.00, 2, 'katerina.l@email.com',      '+30 691 999 0000', NULL),
+('Vassilis Markos',5, '2026-07-18', '2026-07-22', 'pending',    600.00, 4, 'vassilis.m@email.com',      '+30 692 111 2222', 'Need extra bed for child'),
+('Christina Riga', 6, '2026-07-20', '2026-07-25', 'confirmed',  900.00, 3, 'christina.r@email.com',     '+30 692 333 4444', 'Sea-view room requested'),
+('Alexandros T',   1, '2026-05-25', '2026-05-29', 'completed',  100.00, 1, 'alexandros.t@email.com',    '+30 692 555 6666', NULL),
+('Maria Laskari',  3, '2026-05-18', '2026-05-21', 'completed',  240.00, 2, 'maria.lask@email.com',      '+30 692 777 8888', 'Great stay!');
