@@ -9,19 +9,77 @@ import {
   Link,
   InputAdornment,
   IconButton,
+  Alert,
 } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+
+interface FormErrors {
+  email?: string
+  password?: string
+}
 
 export default function Login() {
+  const navigate = useNavigate()
+  const { login } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
 
-  const handleSubmit = (e: React.ChangeEvent) => {
+  const validate = (): FormErrors => {
+    const errs: FormErrors = {}
+
+    if (!email.trim()) {
+      errs.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errs.email = 'Please enter a valid email address'
+    }
+
+    if (!password) {
+      errs.password = 'Password is required'
+    } else if (password.length < 6) {
+      errs.password = 'Password must be at least 6 characters'
+    }
+
+    return errs
+  }
+
+  const handleBlur = (field: keyof FormErrors) => {
+    setTouched((prev) => ({ ...prev, [field]: true }))
+    setErrors(validate())
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: implement actual login logic
-    console.log('Login attempt:', { email, password })
+    setError('')
+
+    const validationErrors = validate()
+    setErrors(validationErrors)
+    setTouched({ email: true, password: true })
+
+    if (Object.keys(validationErrors).length > 0) {
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const success = await login(email.trim(), password)
+      if (success) {
+        navigate('/rooms')
+      } else {
+        setError('Invalid email or password')
+      }
+    } catch {
+      setError('An error occurred. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -84,11 +142,16 @@ export default function Login() {
             </Box>
 
             <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+              {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
+
               <TextField
                 label="Email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => handleBlur('email')}
+                error={touched.email && Boolean(errors.email)}
+                helperText={touched.email && errors.email ? errors.email : ' '}
                 fullWidth
                 required
                 autoFocus
@@ -104,6 +167,9 @@ export default function Login() {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => handleBlur('password')}
+                error={touched.password && Boolean(errors.password)}
+                helperText={touched.password && errors.password ? errors.password : ' '}
                 fullWidth
                 required
                 slotProps={{
@@ -129,6 +195,7 @@ export default function Login() {
                 variant="contained"
                 fullWidth
                 size="large"
+                disabled={loading}
                 sx={{
                   mt: 1,
                   py: 1.5,
@@ -138,7 +205,7 @@ export default function Login() {
                   letterSpacing: '0.5px',
                 }}
               >
-                Sign In
+                {loading ? 'Signing In...' : 'Sign In'}
               </Button>
             </Box>
 

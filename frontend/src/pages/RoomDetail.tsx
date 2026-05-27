@@ -1,19 +1,38 @@
-import { Box, Container, Typography, Paper, Button, Chip, Divider } from '@mui/material'
+import { useState, useEffect } from 'react'
+import { Box, Container, Typography, Paper, Button, Chip, Divider, CircularProgress, Snackbar, Alert } from '@mui/material'
 import { Edit, ArrowBack, Delete } from '@mui/icons-material'
-import { Link as RouterLink, useParams } from 'react-router-dom'
+import { Link as RouterLink, useParams, useNavigate } from 'react-router-dom'
 import NavBar from '../components/NavBar'
-
-const rooms = [
-  { id: 1, name: 'Deluxe Sea View', type: 'Double', floor: 2, price: 180, capacity: 2, description: 'Spacious double room with panoramic sea views. Features a king-size bed, private balcony, and en-suite bathroom with rainfall shower.' },
-  { id: 2, name: 'Standard Garden Room', type: 'Twin', floor: 1, price: 120, capacity: 2, description: 'Comfortable twin room overlooking our lush gardens. Includes two single beds, work desk, and garden access.' },
-  { id: 3, name: 'Presidential Suite', type: 'Suite', floor: 3, price: 350, capacity: 4, description: 'Our finest suite with separate living area, master bedroom, and guest bathroom. Features a jacuzzi and panoramic views.' },
-  { id: 4, name: 'Family Room', type: 'Quad', floor: 1, price: 200, capacity: 4, description: 'Perfect for families. Features one double bed and two single beds, plus a small kitchenette.' },
-  { id: 5, name: 'Cozy Single', type: 'Single', floor: 2, price: 80, capacity: 1, description: 'Compact and cozy single room ideal for solo travelers. Includes a comfortable single bed and en-suite bathroom.' },
-]
+import type { Room } from '../types'
 
 export default function RoomDetail() {
   const { id } = useParams()
-  const room = rooms.find((r) => r.id === Number(id))
+  const navigate = useNavigate()
+  const [room, setRoom] = useState<Room | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [deleteError, setDeleteError] = useState(false)
+
+  useEffect(() => {
+    fetch(`/api/rooms/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found')
+        return res.json()
+      })
+      .then((data) => setRoom(data))
+      .catch(() => setRoom(null))
+      .finally(() => setLoading(false))
+  }, [id])
+
+  if (loading) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <NavBar />
+        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}>
+          <CircularProgress />
+        </Box>
+      </Box>
+    )
+  }
 
   if (!room) {
     return (
@@ -103,6 +122,16 @@ export default function RoomDetail() {
               variant="outlined"
               color="error"
               startIcon={<Delete />}
+              onClick={async () => {
+                if (!window.confirm('Are you sure you want to delete this room?')) return
+                try {
+                  const res = await fetch(`/api/rooms/${room.id}`, { method: 'DELETE' })
+                  if (!res.ok) throw new Error('Failed to delete')
+                  navigate('/rooms')
+                } catch {
+                  setDeleteError(true)
+                }
+              }}
               sx={{ textTransform: 'none', borderColor: 'error.main', color: 'error.main' }}
             >
               Delete Room
@@ -110,6 +139,17 @@ export default function RoomDetail() {
           </Box>
         </Paper>
       </Container>
+
+      <Snackbar
+        open={deleteError}
+        autoHideDuration={4000}
+        onClose={() => setDeleteError(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setDeleteError(false)} sx={{ width: '100%' }}>
+          Failed to delete room
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

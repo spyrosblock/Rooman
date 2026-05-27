@@ -1,5 +1,20 @@
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
+declare module '@mui/material/styles' {
+  interface Palette {
+    errorBg: string
+    errorBorder: string
+    accentLighterBg: string
+    primaryBorder: string
+  }
+  interface PaletteOptions {
+    errorBg?: string
+    errorBorder?: string
+    accentLighterBg?: string
+    primaryBorder?: string
+  }
+}
+
 const lightPalette = {
   text: '#6b6375',
   textH: '#08060d',
@@ -9,6 +24,10 @@ const lightPalette = {
   accent: '#aa3bff',
   accentBg: 'rgba(170, 59, 255, 0.1)',
   accentBorder: 'rgba(170, 59, 255, 0.5)',
+  errorBg: 'rgba(239, 68, 68, 0.06)',
+  errorBorder: 'rgba(239, 68, 68, 0.1)',
+  accentLighterBg: 'rgba(170, 59, 255, 0.06)',
+  primaryBorder: 'rgba(170, 59, 255, 0.19)',
   shadow:
     'rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px',
 };
@@ -22,6 +41,10 @@ const darkPalette = {
   accent: '#c084fc',
   accentBg: 'rgba(192, 132, 252, 0.15)',
   accentBorder: 'rgba(192, 132, 252, 0.5)',
+  errorBg: 'rgba(239, 68, 68, 0.1)',
+  errorBorder: 'rgba(239, 68, 68, 0.18)',
+  accentLighterBg: 'rgba(192, 132, 252, 0.06)',
+  primaryBorder: 'rgba(192, 132, 252, 0.19)',
   shadow:
     'rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px',
 };
@@ -48,6 +71,10 @@ function createAppTheme(mode: 'light' | 'dark') {
         secondary: p.text,
       },
       divider: p.border,
+      errorBg: p.errorBg,
+      errorBorder: p.errorBorder,
+      accentLighterBg: p.accentLighterBg,
+      primaryBorder: p.primaryBorder,
     },
     typography: {
       fontFamily: sans,

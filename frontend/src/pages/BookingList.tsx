@@ -1,17 +1,9 @@
-import { Box, Container, Typography, Paper, Button, Chip, TextField, InputAdornment } from '@mui/material'
+import { useState, useEffect } from 'react'
+import { Box, Container, Typography, Paper, Button, Chip, TextField, InputAdornment, CircularProgress } from '@mui/material'
 import { Add, Search, Visibility, Edit } from '@mui/icons-material'
 import { Link as RouterLink } from 'react-router-dom'
-import { useState } from 'react'
 import NavBar from '../components/NavBar'
-
-const bookings = [
-  { id: 1, guestName: 'John Smith', roomName: 'Deluxe Sea View', roomId: 1, checkIn: '2026-06-10', checkOut: '2026-06-14', status: 'confirmed', total: 720 },
-  { id: 2, guestName: 'Maria Papadopoulou', roomName: 'Standard Garden Room', roomId: 2, checkIn: '2026-06-15', checkOut: '2026-06-17', status: 'confirmed', total: 240 },
-  { id: 3, guestName: 'Alex Johnson', roomName: 'Presidential Suite', roomId: 3, checkIn: '2026-07-01', checkOut: '2026-07-05', status: 'pending', total: 1400 },
-  { id: 4, guestName: 'Elena Karabatos', roomName: 'Family Room', roomId: 4, checkIn: '2026-06-20', checkOut: '2026-06-25', status: 'confirmed', total: 1000 },
-  { id: 5, guestName: 'George Miller', roomName: 'Cozy Single', roomId: 5, checkIn: '2026-06-11', checkOut: '2026-06-12', status: 'cancelled', total: 80 },
-  { id: 6, guestName: 'Sophia Williams', roomName: 'Deluxe Sea View', roomId: 1, checkIn: '2026-07-10', checkOut: '2026-07-15', status: 'pending', total: 900 },
-]
+import type { Booking } from '../types'
 
 const statusColors: Record<string, 'success' | 'warning' | 'error' | 'info'> = {
   confirmed: 'success',
@@ -21,11 +13,32 @@ const statusColors: Record<string, 'success' | 'warning' | 'error' | 'info'> = {
 }
 
 export default function BookingList() {
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    fetch('/api/bookings')
+      .then((res) => res.json())
+      .then((data: Booking[]) => setBookings(data))
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
 
   const filtered = bookings.filter((b) =>
     b.guestName.toLowerCase().includes(search.toLowerCase())
   )
+
+  if (loading) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <NavBar />
+        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}>
+          <CircularProgress />
+        </Box>
+      </Box>
+    )
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -122,12 +135,12 @@ export default function BookingList() {
                   {booking.guestName}
                 </Typography>
                 <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', display: { md: 'none' } }}>
-                  {booking.roomName}
+                  {booking.roomName ?? `Room #${booking.roomId}`}
                 </Typography>
               </Box>
 
               <Typography sx={{ flex: 1, fontSize: '0.9rem', display: { xs: 'none', md: 'block' } }}>
-                {booking.roomName}
+                {booking.roomName ?? `Room #${booking.roomId}`}
               </Typography>
 
               <Typography sx={{ flex: 1, fontSize: '0.9rem' }}>
@@ -175,7 +188,7 @@ export default function BookingList() {
           {filtered.length === 0 && (
             <Box sx={{ py: 6, textAlign: 'center' }}>
               <Typography sx={{ color: 'text.secondary' }}>
-                No bookings found for "{search}"
+                {search ? `No bookings found for "${search}"` : 'No bookings yet'}
               </Typography>
             </Box>
           )}

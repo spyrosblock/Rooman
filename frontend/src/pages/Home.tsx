@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Box, Container, Typography, Paper, Fade, CircularProgress } from '@mui/material'
+import { Box, Container, Typography, Paper, Fade, CircularProgress, Chip } from '@mui/material'
 import { keyframes } from '@emotion/react'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs, { Dayjs } from 'dayjs'
@@ -27,37 +27,38 @@ const fadeScaleIn = keyframes`
   }
 `
 
-function getAvailableRooms(_date: Dayjs): number {
-  return 5
+interface Room {
+  id: number
+  name: string
+  type: string
+  floor: number
+  price: number
+  capacity: number
+  description: string
 }
 
 export default function Home() {
   const [date, setDate] = useState<Dayjs | null>(dayjs().add(1, 'day'))
-  const [rooms, setRooms] = useState<number | null>(null)
+  const [rooms, setRooms] = useState<Room[] | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!date) return
     setLoading(true)
     setRooms(null)
-    const timer = setTimeout(() => {
-      setRooms(getAvailableRooms(date))
-      setLoading(false)
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [date])
 
-  // Trigger initial load
-  useEffect(() => {
-    if (date && rooms === null && !loading) {
-      setLoading(true)
-      const timer = setTimeout(() => {
-        setRooms(getAvailableRooms(date))
+    const formattedDate = date.format('YYYY-MM-DD')
+    fetch(`/api/rooms/available?date=${formattedDate}`)
+      .then((res) => res.json())
+      .then((data: Room[]) => {
+        setRooms(data)
         setLoading(false)
-      }, 500)
-      return () => clearTimeout(timer)
-    }
-  }, [])
+      })
+      .catch(() => {
+        setRooms([])
+        setLoading(false)
+      })
+  }, [date])
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -171,7 +172,7 @@ export default function Home() {
               </Box>
             </Fade>
 
-            {!loading && rooms !== null && (
+            {!loading && rooms !== null && rooms.length === 0 && (
               <Box
                 sx={{
                   animation: `${fadeScaleIn} 0.4s ease-out forwards`,
@@ -182,9 +183,8 @@ export default function Home() {
                     py: 3,
                     px: 4,
                     borderRadius: 2,
-                    bgcolor: rooms && rooms > 0 ? 'rgba(170, 59, 255, 0.06)' : 'rgba(239, 68, 68, 0.06)',
-                    border: (theme) =>
-                      `1px solid ${rooms && rooms > 0 ? theme.palette.primary.main + '30' : '#ef444430'}`,
+                    bgcolor: 'errorBg',
+                    border: (theme) => `1px solid ${theme.palette.errorBorder}`,
                   }}
                 >
                   <Typography
@@ -202,17 +202,105 @@ export default function Home() {
                     sx={{
                       fontSize: '3.5rem',
                       fontWeight: 300,
-                      color: rooms && rooms > 0 ? 'primary.main' : 'error.main',
+                      color: 'error.main',
                       lineHeight: 1,
                       fontVariantNumeric: 'tabular-nums',
                     }}
                   >
-                    {rooms}
+                    0
                   </Typography>
                   <Typography sx={{ mt: 1.5, color: 'text.secondary', fontSize: '0.95rem' }}>
-                    {rooms && rooms > 0
-                      ? `on ${date?.format('MMMM D, YYYY')}`
-                      : 'No rooms available for this date'}
+                    No rooms available for this date
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
+            {!loading && rooms !== null && rooms.length > 0 && (
+              <Box
+                sx={{
+                  animation: `${fadeScaleIn} 0.4s ease-out forwards`,
+                }}
+              >
+                <Box
+                  sx={{
+                    py: 3,
+                    px: 4,
+                    borderRadius: 2,
+                    bgcolor: 'accentLighterBg',
+                    border: (theme) =>
+                      `1px solid ${theme.palette.primaryBorder}`,
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: '0.875rem',
+                      color: 'text.secondary',
+                      textTransform: 'uppercase',
+                      letterSpacing: '2px',
+                      mb: 1,
+                    }}
+                  >
+                    Available Rooms
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: '3.5rem',
+                      fontWeight: 300,
+                      color: 'primary.main',
+                      lineHeight: 1,
+                      fontVariantNumeric: 'tabular-nums',
+                      mb: 2,
+                    }}
+                  >
+                    {rooms.length}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.5,
+                      maxHeight: 320,
+                      overflow: 'auto',
+                      pr: 1,
+                      '&::-webkit-scrollbar': { width: 6 },
+                      '&::-webkit-scrollbar-thumb': {
+                        bgcolor: 'divider',
+                        borderRadius: 3,
+                      },
+                    }}
+                  >
+                    {rooms.map((room) => (
+                      <Box
+                        key={room.id}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 2,
+                          borderRadius: 2,
+                          bgcolor: 'background.paper',
+                          border: (theme) => `1px solid ${theme.palette.divider}`,
+                          textAlign: 'left',
+                        }}
+                      >
+                        <Box>
+                          <Typography sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
+                            {room.name}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
+                            <Chip label={room.type} size="small" variant="outlined" sx={{ fontSize: '0.7rem' }} />
+                            <Chip label={`${room.capacity} guests`} size="small" variant="outlined" sx={{ fontSize: '0.7rem' }} />
+                          </Box>
+                        </Box>
+                        <Typography sx={{ fontWeight: 400, fontSize: '1.1rem', whiteSpace: 'nowrap', ml: 2 }}>
+                          €{room.price}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                  <Typography sx={{ mt: 2, color: 'text.secondary', fontSize: '0.95rem' }}>
+                    on {date?.format('MMMM D, YYYY')}
                   </Typography>
                 </Box>
               </Box>
@@ -243,6 +331,7 @@ export default function Home() {
             sx={{
               textAlign: 'center',
               mt: 5,
+              mb: 12,
               color: 'text.secondary',
               fontSize: '0.8rem',
               letterSpacing: '1px',

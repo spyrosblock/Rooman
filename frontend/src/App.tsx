@@ -1,26 +1,32 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute'
+
 import Home from './pages/Home'
 import Login from './pages/Login'
-import RoomList from './pages/RoomList'
-import RoomDetail from './pages/RoomDetail'
-import RoomForm from './pages/RoomForm'
-import BookingList from './pages/BookingList'
-import BookingDetail from './pages/BookingDetail'
-import BookingForm from './pages/BookingForm'
+
+const RoomList = lazy(() => import('./pages/RoomList'))
+const RoomDetail = lazy(() => import('./pages/RoomDetail'))
+const RoomForm = lazy(() => import('./pages/RoomForm'))
+const BookingList = lazy(() => import('./pages/BookingList'))
+const BookingDetail = lazy(() => import('./pages/BookingDetail'))
+const BookingForm = lazy(() => import('./pages/BookingForm'))
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/rooms" element={<RoomList />} />
-      <Route path="/rooms/new" element={<RoomForm />} />
-      <Route path="/rooms/:id" element={<RoomDetail />} />
-      <Route path="/rooms/:id/edit" element={<RoomForm />} />
-      <Route path="/bookings" element={<BookingList />} />
-      <Route path="/bookings/new" element={<BookingForm />} />
-      <Route path="/bookings/:id" element={<BookingDetail />} />
-      <Route path="/bookings/:id/edit" element={<BookingForm />} />
-    </Routes>
+    <Suspense fallback={<div>Loading…</div>}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/rooms" element={<ProtectedRoute><RoomList /></ProtectedRoute>} />
+        <Route path="/rooms/new" element={<ProtectedRoute><RoomForm /></ProtectedRoute>} />
+        <Route path="/rooms/:id" element={<ProtectedRoute><RoomDetail /></ProtectedRoute>} />
+        <Route path="/rooms/:id/edit" element={<ProtectedRoute><RoomForm /></ProtectedRoute>} />
+        <Route path="/bookings" element={<ProtectedRoute><BookingList /></ProtectedRoute>} />
+        <Route path="/bookings/new" element={<ProtectedRoute><BookingForm /></ProtectedRoute>} />
+        <Route path="/bookings/:id" element={<ProtectedRoute><BookingDetail /></ProtectedRoute>} />
+        <Route path="/bookings/:id/edit" element={<ProtectedRoute><BookingForm /></ProtectedRoute>} />
+      </Routes>
+    </Suspense>
   )
 }

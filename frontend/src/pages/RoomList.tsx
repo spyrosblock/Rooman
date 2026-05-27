@@ -1,17 +1,32 @@
-import { Box, Container, Typography, Paper, Button, Chip } from '@mui/material'
+import { useState, useEffect } from 'react'
+import { Box, Container, Typography, Paper, Button, Chip, CircularProgress } from '@mui/material'
 import { Add, Edit, Visibility } from '@mui/icons-material'
 import { Link as RouterLink } from 'react-router-dom'
 import NavBar from '../components/NavBar'
-
-const rooms = [
-  { id: 1, name: 'Deluxe Sea View', type: 'Double', floor: 2, price: 180, capacity: 2 },
-  { id: 2, name: 'Standard Garden Room', type: 'Twin', floor: 1, price: 120, capacity: 2 },
-  { id: 3, name: 'Presidential Suite', type: 'Suite', floor: 3, price: 350, capacity: 4 },
-  { id: 4, name: 'Family Room', type: 'Quad', floor: 1, price: 200, capacity: 4 },
-  { id: 5, name: 'Cozy Single', type: 'Single', floor: 2, price: 80, capacity: 1 },
-]
+import type { Room } from '../types'
 
 export default function RoomList() {
+  const [rooms, setRooms] = useState<Room[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/rooms')
+      .then((res) => res.json())
+      .then((data) => setRooms(data))
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <NavBar />
+        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}>
+          <CircularProgress />
+        </Box>
+      </Box>
+    )
+  }
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <NavBar />

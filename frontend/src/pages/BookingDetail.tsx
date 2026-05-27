@@ -1,16 +1,9 @@
-import { Box, Container, Typography, Paper, Button, Chip, Divider } from '@mui/material'
+import { useState, useEffect } from 'react'
+import { Box, Container, Typography, Paper, Button, Chip, Divider, CircularProgress, Snackbar, Alert } from '@mui/material'
 import { Edit, ArrowBack, Delete } from '@mui/icons-material'
-import { Link as RouterLink, useParams } from 'react-router-dom'
+import { Link as RouterLink, useParams, useNavigate } from 'react-router-dom'
 import NavBar from '../components/NavBar'
-
-const bookings = [
-  { id: 1, guestName: 'John Smith', roomName: 'Deluxe Sea View', roomId: 1, checkIn: '2026-06-10', checkOut: '2026-06-14', status: 'confirmed', total: 720, guests: 2, email: 'john.smith@email.com', phone: '+30 6912345678', notes: 'Requests extra pillows and a sea-view balcony.' },
-  { id: 2, guestName: 'Maria Papadopoulou', roomName: 'Standard Garden Room', roomId: 2, checkIn: '2026-06-15', checkOut: '2026-06-17', status: 'confirmed', total: 240, guests: 2, email: 'maria.p@email.com', phone: '+30 6912345679', notes: '' },
-  { id: 3, guestName: 'Alex Johnson', roomName: 'Presidential Suite', roomId: 3, checkIn: '2026-07-01', checkOut: '2026-07-05', status: 'pending', total: 1400, guests: 3, email: 'alex.j@email.com', phone: '+44 7700123456', notes: 'Requires airport transfer.' },
-  { id: 4, guestName: 'Elena Karabatos', roomName: 'Family Room', roomId: 4, checkIn: '2026-06-20', checkOut: '2026-06-25', status: 'confirmed', total: 1000, guests: 4, email: 'elena.k@email.com', phone: '+30 6912345680', notes: 'Has two children aged 4 and 7. Needs a baby cot.' },
-  { id: 5, guestName: 'George Miller', roomName: 'Cozy Single', roomId: 5, checkIn: '2026-06-11', checkOut: '2026-06-12', status: 'cancelled', total: 80, guests: 1, email: 'george.m@email.com', phone: '+30 6912345681', notes: 'Cancelled due to flight change.' },
-  { id: 6, guestName: 'Sophia Williams', roomName: 'Deluxe Sea View', roomId: 1, checkIn: '2026-07-10', checkOut: '2026-07-15', status: 'pending', total: 900, guests: 2, email: 'sophia.w@email.com', phone: '+30 6912345682', notes: '' },
-]
+import type { Booking } from '../types'
 
 const statusColors: Record<string, 'success' | 'warning' | 'error' | 'info'> = {
   confirmed: 'success',
@@ -21,7 +14,32 @@ const statusColors: Record<string, 'success' | 'warning' | 'error' | 'info'> = {
 
 export default function BookingDetail() {
   const { id } = useParams()
-  const booking = bookings.find((b) => b.id === Number(id))
+  const navigate = useNavigate()
+  const [booking, setBooking] = useState<Booking | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [deleteError, setDeleteError] = useState(false)
+
+  useEffect(() => {
+    fetch(`/api/bookings/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found')
+        return res.json()
+      })
+      .then((data) => setBooking(data))
+      .catch(() => setBooking(null))
+      .finally(() => setLoading(false))
+  }, [id])
+
+  if (loading) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <NavBar />
+        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}>
+          <CircularProgress />
+        </Box>
+      </Box>
+    )
+  }
 
   if (!booking) {
     return (
@@ -125,7 +143,9 @@ export default function BookingDetail() {
                 <Typography sx={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'text.secondary', mb: 0.5 }}>
                   Room
                 </Typography>
-                <Typography sx={{ fontWeight: 500 }}>{booking.roomName}</Typography>
+                <Typography sx={{ fontWeight: 500 }}>
+                  {booking.roomName ?? `Room #${booking.roomId}`}
+                </Typography>
               </Paper>
               <Paper
                 elevation={0}
@@ -206,6 +226,16 @@ export default function BookingDetail() {
               variant="outlined"
               color="error"
               startIcon={<Delete />}
+              onClick={async () => {
+                if (!window.confirm('Are you sure you want to delete this booking?')) return
+                try {
+                  const res = await fetch(`/api/bookings/${booking.id}`, { method: 'DELETE' })
+                  if (!res.ok) throw new Error('Failed to delete')
+                  navigate('/bookings')
+                } catch {
+                  setDeleteError(true)
+                }
+              }}
               sx={{ textTransform: 'none', borderColor: 'error.main', color: 'error.main' }}
             >
               Delete Booking
@@ -213,6 +243,17 @@ export default function BookingDetail() {
           </Box>
         </Paper>
       </Container>
+
+      <Snackbar
+        open={deleteError}
+        autoHideDuration={4000}
+        onClose={() => setDeleteError(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setDeleteError(false)} sx={{ width: '100%' }}>
+          Failed to delete booking
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

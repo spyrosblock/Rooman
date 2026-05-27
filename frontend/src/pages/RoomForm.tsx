@@ -1,26 +1,25 @@
 import { useState, useEffect } from 'react'
 import {
-  Box, Container, Typography, Paper, Button, TextField, MenuItem
+  Box, Container, Typography, Paper, Button, TextField, MenuItem, CircularProgress, Alert
 } from '@mui/material'
 import { ArrowBack, Save } from '@mui/icons-material'
 import { Link as RouterLink, useParams, useNavigate } from 'react-router-dom'
 import NavBar from '../components/NavBar'
 
-const rooms = [
-  { id: 1, name: 'Deluxe Sea View', type: 'Double', floor: 2, price: 180, capacity: 2, description: 'Spacious double room with panoramic sea views. Features a king-size bed, private balcony, and en-suite bathroom with rainfall shower.' },
-  { id: 2, name: 'Standard Garden Room', type: 'Twin', floor: 1, price: 120, capacity: 2, description: 'Comfortable twin room overlooking our lush gardens. Includes two single beds, work desk, and garden access.' },
-  { id: 3, name: 'Presidential Suite', type: 'Suite', floor: 3, price: 350, capacity: 4, description: 'Our finest suite with separate living area, master bedroom, and guest bathroom. Features a jacuzzi and panoramic views.' },
-  { id: 4, name: 'Family Room', type: 'Quad', floor: 1, price: 200, capacity: 4, description: 'Perfect for families. Features one double bed and two single beds, plus a small kitchenette.' },
-  { id: 5, name: 'Cozy Single', type: 'Single', floor: 2, price: 80, capacity: 1, description: 'Compact and cozy single room ideal for solo travelers. Includes a comfortable single bed and en-suite bathroom.' },
-]
-
 const roomTypes = ['Single', 'Double', 'Twin', 'Suite', 'Quad']
+
+interface FormErrors {
+  name?: string
+  type?: string
+  floor?: string
+  price?: string
+  capacity?: string
+}
 
 export default function RoomForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const isEdit = Boolean(id)
-  const existingRoom = rooms.find((r) => r.id === Number(id))
 
   const [name, setName] = useState('')
   const [type, setType] = useState('Double')
@@ -28,22 +27,125 @@ export default function RoomForm() {
   const [price, setPrice] = useState(100)
   const [capacity, setCapacity] = useState(2)
   const [description, setDescription] = useState('')
+  const [loading, setLoading] = useState(isEdit)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
-    if (existingRoom) {
-      setName(existingRoom.name)
-      setType(existingRoom.type)
-      setFloor(existingRoom.floor)
-      setPrice(existingRoom.price)
-      setCapacity(existingRoom.capacity)
-      setDescription(existingRoom.description)
-    }
-  }, [existingRoom])
+    if (!isEdit) return
+    fetch(`/api/rooms/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Room not found')
+        return res.json()
+      })
+      .then((room) => {
+        setName(room.name)
+        setType(room.type)
+        setFloor(room.floor)
+        setPrice(room.price)
+        setCapacity(room.capacity)
+        setDescription(room.description ?? '')
+      })
+      .catch(() => navigate('/rooms'))
+      .finally(() => setLoading(false))
+  }, [id, isEdit, navigate])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validate = (): FormErrors => {
+    const errs: FormErrors = {}
+
+    if (!name.trim()) {
+      errs.name = 'Room name is required'
+    } else if (name.trim().length < 2) {
+      errs.name = 'Room name must be at least 2 characters'
+    }
+
+    if (!type) {
+      errs.type = 'Room type is required'
+    }
+
+    if (!floor || floor < 1) {
+      errs.floor = 'Floor must be at least 1'
+    }
+
+    if (!capacity || capacity < 1) {
+      errs.capacity = 'Capacity must be at least 1'
+    } else if (capacity > 20) {
+      errs.capacity = 'Maximum capacity is 20'
+    }
+
+    if (!price || price <= 0) {
+      errs.price = 'Price must be greater than 0'
+    } else if (price > 100000) {
+      errs.price = 'Price cannot exceed €100,000'
+    }
+
+    return errs
+  }
+
+  const handleBlur = (field: keyof FormErrors) => {
+    setTouched((prev) => ({ ...prev, [field]: true }))
+    setErrors(validate())
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: implement actual save
-    navigate(isEdit ? `/rooms/${id}` : '/rooms')
+    setSaving(true)
+    setError('')
+
+    const validationErrors = validate()
+    setErrors(validationErrors)
+    setTouched({
+      name: true,
+      type: true,
+      floor: true,
+      price: true,
+      capacity: true,
+    })
+
+    if (Object.keys(validationErrors).length > 0) {
+      setSaving(false)
+      return
+    }
+
+    const body = { name: name.trim(), type, floor, price, capacity, description }
+
+    try {
+      const url = isEdit ? `/api/rooms/${id}` : '/api/rooms'
+      const method = isEdit ? 'PUT' : 'POST'
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        const msg = data?.message || data?.errors
+          ? Object.values(data.errors).join(', ')
+          : 'Failed to save room'
+        throw new Error(msg || 'Failed to save room')
+      }
+
+      const saved = await res.json()
+      navigate(isEdit ? `/rooms/${saved.id}` : '/rooms')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save room')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <NavBar />
+        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}>
+          <CircularProgress />
+        </Box>
+      </Box>
+    )
   }
 
   return (
@@ -71,11 +173,20 @@ export default function RoomForm() {
             {isEdit ? 'Edit Room' : 'New Room'}
           </Typography>
 
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <TextField
               label="Room Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onBlur={() => handleBlur('name')}
+              error={touched.name && Boolean(errors.name)}
+              helperText={touched.name && errors.name ? errors.name : ' '}
               fullWidth
               required
             />
@@ -84,6 +195,9 @@ export default function RoomForm() {
               label="Room Type"
               value={type}
               onChange={(e) => setType(e.target.value)}
+              onBlur={() => handleBlur('type')}
+              error={touched.type && Boolean(errors.type)}
+              helperText={touched.type && errors.type ? errors.type : ' '}
               select
               fullWidth
               required
@@ -98,6 +212,9 @@ export default function RoomForm() {
               type="number"
               value={floor}
               onChange={(e) => setFloor(Number(e.target.value))}
+              onBlur={() => handleBlur('floor')}
+              error={touched.floor && Boolean(errors.floor)}
+              helperText={touched.floor && errors.floor ? errors.floor : ' '}
               fullWidth
               required
               slotProps={{ htmlInput: { min: 1, max: 10 } }}
@@ -108,6 +225,9 @@ export default function RoomForm() {
               type="number"
               value={capacity}
               onChange={(e) => setCapacity(Number(e.target.value))}
+              onBlur={() => handleBlur('capacity')}
+              error={touched.capacity && Boolean(errors.capacity)}
+              helperText={touched.capacity && errors.capacity ? errors.capacity : ' '}
               fullWidth
               required
               slotProps={{ htmlInput: { min: 1, max: 10 } }}
@@ -118,6 +238,9 @@ export default function RoomForm() {
               type="number"
               value={price}
               onChange={(e) => setPrice(Number(e.target.value))}
+              onBlur={() => handleBlur('price')}
+              error={touched.price && Boolean(errors.price)}
+              helperText={touched.price && errors.price ? errors.price : ' '}
               fullWidth
               required
               slotProps={{ htmlInput: { min: 0 } }}
@@ -137,9 +260,10 @@ export default function RoomForm() {
                 type="submit"
                 variant="contained"
                 startIcon={<Save />}
+                disabled={saving}
                 sx={{ textTransform: 'none', flex: 1 }}
               >
-                {isEdit ? 'Save Changes' : 'Create Room'}
+                {saving ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Room'}
               </Button>
               <Button
                 component={RouterLink}
