@@ -69,23 +69,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .findFirst();
     }
 
-    public static void addTokenCookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie("token", token);
+    private static Cookie buildTokenCookie(String value, int maxAge) {
+        Cookie cookie = new Cookie("token", value);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setAttribute("SameSite", "Strict");
         cookie.setPath("/");
-        cookie.setMaxAge(3600);
-        response.addCookie(cookie);
+        cookie.setMaxAge(maxAge);
+        return cookie;
+    }
+
+    public static void addTokenCookie(HttpServletResponse response, String token) {
+        response.addCookie(buildTokenCookie(token, 3600));
     }
 
     public static void removeTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("token", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setAttribute("SameSite", "Strict");
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        response.addCookie(buildTokenCookie(null, 0));
     }
 }
