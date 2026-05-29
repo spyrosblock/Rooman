@@ -1,6 +1,3 @@
 INSERT INTO users (email, password) VALUES
-('admin@admin.com', '$2a$10$5VS2DqaRe2obwefZAF2BQO5M7FvJ16l71mX6TKpkZFBeAD2tD5ZxW'), /* password is admin (strength 10) */
-('root@root.com',  '$2a$10$5VS2DqaRe2obwefZAF2BQO5M7FvJ16l71mX6TKpkZFBeAD2tD5ZxW');
-
-/* for admin: $2a$10$5VS2DqaRe2obwefZAF2BQO5M7FvJ16l71mX6TKpkZFBeAD2tD5ZxW */
-/* for password: $2a$10$s1h5AjKrBzx/OOIQwZPflOWzXp8T7G7bGTxntteaLWujNr4CJKf8u */
+('admin@admin.com', 'AAECAwQFBgcICQoLDA0ODw==$L8rfqRjrqPFIzI1bHapd/VEvfa0TkNFxVW0Jb5n5Z6I='), /* password is admin (SHA-256 with salt) */
+('root@root.com',  'EBESExQVFhcYGRobHB0eHw==$5r84X5WcISAsguIt+6qN72fTShHvsuNKGvZn7XcvSAQ=');  /* password is root (SHA-256 with salt) */
