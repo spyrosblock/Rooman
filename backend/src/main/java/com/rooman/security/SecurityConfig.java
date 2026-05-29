@@ -33,7 +33,6 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/users/login").permitAll()
-                .requestMatchers("/api/users/logout").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/rooms").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/rooms/*").permitAll()
                 .anyRequest().authenticated()
