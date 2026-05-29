@@ -34,10 +34,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/users/login").permitAll()
                 .requestMatchers("/api/users/logout").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/rooms/available").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/rooms").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/rooms/*").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/rooms/type/*").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter,
