@@ -70,6 +70,7 @@ export default function NavBar() {
                 onClick={handleLogout}
                 sx={{
                   color: 'text.secondary',
+                  background: 'transparent',
                   fontSize: '0.85rem',
                   px: 1.5,
                   py: 0.5,
