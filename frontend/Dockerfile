@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:26-alpine3.22 AS build
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-FROM nginx:alpine AS runner
+FROM nginx:1.31.1-alpine AS runner
 
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf

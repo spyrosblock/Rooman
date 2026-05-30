@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:18.4
     container_name: my-postgres
     env_file:
       - ./db/postgres/.env
@@ -12,7 +12,7 @@ services:
     restart: unless-stopped
 
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:9.15.0
     container_name: my-pgadmin
     env_file:
       - ./db/pgadmin/.env
