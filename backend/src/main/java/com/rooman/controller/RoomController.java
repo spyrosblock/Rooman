@@ -46,21 +46,13 @@ public class RoomController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Room> updateRoom(@PathVariable Integer id, @Valid @RequestBody Room room) {
-        try {
-            Room updated = roomService.update(id, room);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Room updated = roomService.update(id, room);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRoom(@PathVariable Integer id) {
-        try {
-            roomService.delete(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        roomService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
