@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import type { User } from '../types'
 
 interface AuthContextType {
@@ -14,25 +14,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const checkAuth = useCallback(async () => {
-    try {
-      const res = await fetch('/api/users/me')
-      if (res.ok) {
-        const data = await res.json()
-        setUser(data)
-      } else {
-        setUser(null)
-      }
-    } catch {
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
   useEffect(() => {
-    checkAuth()
-  }, [checkAuth])
+    fetch('/api/users/me')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setUser(data ?? null))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false))
+  }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
     const res = await fetch('/api/users/login', {
@@ -41,11 +29,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ email, password }),
     })
     const data = await res.json()
-    if (data.success) {
-      await checkAuth()
-      return true
-    }
-    return false
+    if (!data.success) return false
+
+    const me = await fetch('/api/users/me')
+    setUser(me.ok ? await me.json() : null)
+    return true
   }
 
   const logout = async () => {
