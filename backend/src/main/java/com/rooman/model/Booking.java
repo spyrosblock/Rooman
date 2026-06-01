@@ -2,8 +2,11 @@ package com.rooman.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,6 +21,7 @@ public class Booking {
     private Integer id;
 
     @NotBlank
+    @Size(min = 2)
     @Column(name = "guest_name", nullable = false)
     private String guestName;
 
@@ -34,6 +38,8 @@ public class Booking {
     private LocalDate checkOut;
 
     @NotBlank
+    @Pattern(regexp = "^(pending|confirmed|cancelled|completed)$",
+             message = "Status must be one of: pending, confirmed, cancelled, completed")
     @Column(nullable = false)
     private String status;
 
@@ -44,6 +50,7 @@ public class Booking {
 
     @NotNull
     @Positive
+    @Max(10)
     @Column(nullable = false)
     private Integer guests;
 

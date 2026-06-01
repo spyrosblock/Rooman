@@ -1,7 +1,9 @@
 package com.rooman.service;
 
 import com.rooman.model.Booking;
+import com.rooman.model.Room;
 import com.rooman.repository.BookingRepository;
+import com.rooman.repository.RoomRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -12,9 +14,11 @@ import java.util.Optional;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    private final RoomRepository roomRepository;
 
-    public BookingService(BookingRepository bookingRepository) {
+    public BookingService(BookingRepository bookingRepository, RoomRepository roomRepository) {
         this.bookingRepository = bookingRepository;
+        this.roomRepository = roomRepository;
     }
 
     public List<Booking> findAll() {
@@ -34,6 +38,14 @@ public class BookingService {
         }
         if (booking.getCheckIn().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Check-in cannot be in the past");
+        }
+
+        Room room = roomRepository.findById(booking.getRoomId())
+                .orElseThrow(() -> new IllegalArgumentException("Room not found with id: " + booking.getRoomId()));
+
+        if (booking.getGuests() > room.getCapacity()) {
+            throw new IllegalArgumentException(
+                    "Number of guests (" + booking.getGuests() + ") exceeds room capacity (" + room.getCapacity() + ")");
         }
 
         List<Booking> conflicts = bookingRepository.findConflictingBookings(
@@ -56,6 +68,9 @@ public class BookingService {
             booking.setRoomId(bookingDetails.getRoomId());
         }
         if (bookingDetails.getCheckIn() != null) {
+            if (bookingDetails.getCheckIn().isBefore(LocalDate.now())) {
+                throw new IllegalArgumentException("Check-in cannot be in the past");
+            }
             booking.setCheckIn(bookingDetails.getCheckIn());
         }
         if (bookingDetails.getCheckOut() != null) {
@@ -85,6 +100,14 @@ public class BookingService {
         }
         if (!booking.getCheckIn().isBefore(booking.getCheckOut())) {
             throw new IllegalArgumentException("Check-in must be before check-out");
+        }
+
+        Room room = roomRepository.findById(booking.getRoomId())
+                .orElseThrow(() -> new IllegalArgumentException("Room not found with id: " + booking.getRoomId()));
+
+        if (booking.getGuests() > room.getCapacity()) {
+            throw new IllegalArgumentException(
+                    "Number of guests (" + booking.getGuests() + ") exceeds room capacity (" + room.getCapacity() + ")");
         }
 
         List<Booking> conflicts = bookingRepository.findConflictingBookingsExcludingId(

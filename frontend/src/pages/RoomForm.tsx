@@ -6,7 +6,7 @@ import { ArrowBack, Save } from '@mui/icons-material'
 import { Link as RouterLink, useParams, useNavigate } from 'react-router-dom'
 import NavBar from '../components/NavBar'
 
-const roomTypes = ['Single', 'Double', 'Twin', 'Suite', 'Quad']
+const roomTypes = ['single', 'double', 'twin', 'suite', 'quad']
 
 interface FormErrors {
   name?: string
@@ -22,7 +22,7 @@ export default function RoomForm() {
   const isEdit = Boolean(id)
 
   const [name, setName] = useState('')
-  const [type, setType] = useState('Double')
+  const [type, setType] = useState('double')
   const [floor, setFloor] = useState(1)
   const [price, setPrice] = useState(100)
   const [capacity, setCapacity] = useState(2)
@@ -67,6 +67,8 @@ export default function RoomForm() {
 
     if (!floor || floor < 1) {
       errs.floor = 'Floor must be at least 1'
+    } else if (floor > 10) {
+      errs.floor = 'Floor cannot exceed 10'
     }
 
     if (!capacity || capacity < 1) {
@@ -230,7 +232,7 @@ export default function RoomForm() {
               helperText={touched.capacity && errors.capacity ? errors.capacity : ' '}
               fullWidth
               required
-              slotProps={{ htmlInput: { min: 1, max: 10 } }}
+              slotProps={{ htmlInput: { min: 1, max: 20 } }}
             />
 
             <TextField

@@ -105,8 +105,8 @@ export default function BookingForm() {
 
     if (!guests || guests < 1) {
       errs.guests = 'At least 1 guest is required'
-    } else if (guests > 10) {
-      errs.guests = 'Maximum 10 guests allowed'
+    } else if (selectedRoom && guests > selectedRoom.capacity) {
+      errs.guests = `Maximum ${selectedRoom.capacity} guests allowed for this room`
     }
 
     if (!checkIn) {
@@ -300,7 +300,12 @@ export default function BookingForm() {
               helperText={touched.guests && errors.guests ? errors.guests : ' '}
               fullWidth
               required
-              slotProps={{ htmlInput: { min: 1, max: 10 } }}
+              slotProps={{
+                htmlInput: {
+                  min: 1,
+                  max: selectedRoom?.capacity ?? 10,
+                },
+              }}
             />
 
             <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>

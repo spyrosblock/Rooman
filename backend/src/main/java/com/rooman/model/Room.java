@@ -1,8 +1,12 @@
 package com.rooman.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -16,24 +20,31 @@ public class Room {
     private Integer id;
 
     @NotBlank
+    @Size(min = 2)
     @Column(nullable = false)
     private String name;
 
     @NotBlank
+    @Pattern(regexp = "^(single|double|twin|suite|quad)$",
+             message = "Room type must be one of: single, double, twin, suite, quad")
     @Column(nullable = false)
     private String type;
 
     @NotNull
+    @Min(1)
+    @Max(10)
     @Column(nullable = false)
     private Integer floor;
 
     @NotNull
     @Positive
+    @Max(100000)
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
     @NotNull
     @Positive
+    @Max(20)
     @Column(nullable = false)
     private Integer capacity;
 

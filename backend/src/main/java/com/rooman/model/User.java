@@ -3,6 +3,7 @@ package com.rooman.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
@@ -18,6 +19,7 @@ public class User {
     private String email;
 
     @NotBlank
+    @Size(min = 4)
     @Column(nullable = false)
     private String password;
 

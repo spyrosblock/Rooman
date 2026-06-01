@@ -4,10 +4,12 @@ export interface User {
   password?: string
 }
 
+export type RoomType = 'single' | 'double' | 'twin' | 'suite' | 'quad'
+
 export interface Room {
   id: number
   name: string
-  type: string
+  type: RoomType
   floor: number
   price: number
   capacity: number
