@@ -1,6 +1,7 @@
 package com.rooman.controller;
 
 import com.rooman.model.User;
+import com.rooman.model.UserResponse;
 import com.rooman.security.JwtAuthenticationFilter;
 import com.rooman.security.JwtUtil;
 import com.rooman.service.UserService;
@@ -50,12 +51,15 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> currentUser() {
-        // The authenticated user is set in the security context by the filter
-        Object principal = org.springframework.security.core.context.SecurityContextHolder
-                .getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<UserResponse> currentUser() {
+        var authentication = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        Object principal = authentication.getPrincipal();
         if (principal instanceof User user) {
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(new UserResponse(user.getId(), user.getEmail()));
         }
         return ResponseEntity.status(401).build();
     }

@@ -1,7 +1,6 @@
 export interface User {
   id: number
   email: string
-  password?: string
 }
 
 export type RoomType = 'single' | 'double' | 'twin' | 'suite' | 'quad'
