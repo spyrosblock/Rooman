@@ -80,6 +80,19 @@ public class BookingService {
             booking.setNotes(bookingDetails.getNotes());
         }
 
+        if (booking.getCheckIn() == null || booking.getCheckOut() == null) {
+            throw new IllegalArgumentException("Check-in and check-out dates are required");
+        }
+        if (!booking.getCheckIn().isBefore(booking.getCheckOut())) {
+            throw new IllegalArgumentException("Check-in must be before check-out");
+        }
+
+        List<Booking> conflicts = bookingRepository.findConflictingBookingsExcludingId(
+                booking.getRoomId(), booking.getCheckIn(), booking.getCheckOut(), id);
+        if (!conflicts.isEmpty()) {
+            throw new IllegalArgumentException("Room is not available for the selected dates");
+        }
+
         return bookingRepository.save(booking);
     }
 

@@ -17,6 +17,12 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
                                           @Param("checkIn") LocalDate checkIn,
                                           @Param("checkOut") LocalDate checkOut);
 
+    @Query("SELECT b FROM Booking b WHERE b.roomId = :roomId AND b.id <> :excludeId AND b.checkIn < :checkOut AND b.checkOut > :checkIn")
+    List<Booking> findConflictingBookingsExcludingId(@Param("roomId") Integer roomId,
+                                                     @Param("checkIn") LocalDate checkIn,
+                                                     @Param("checkOut") LocalDate checkOut,
+                                                     @Param("excludeId") Integer excludeId);
+
     @Query("SELECT DISTINCT b.roomId FROM Booking b WHERE b.checkIn <= :date AND b.checkOut > :date AND b.status <> 'cancelled'")
     List<Integer> findBookedRoomIdsOnDate(@Param("date") LocalDate date);
 }
