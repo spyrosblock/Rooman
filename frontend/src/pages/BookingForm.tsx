@@ -180,9 +180,9 @@ export default function BookingForm() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => null)
-        const msg = data?.message || data?.errors
+        const msg = data?.message ?? (data?.errors
           ? Object.values(data.errors).join(', ')
-          : 'Failed to save booking'
+          : 'Failed to save booking')
         throw new Error(msg || 'Failed to save booking')
       }
 
