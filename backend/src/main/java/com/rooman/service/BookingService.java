@@ -119,6 +119,10 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
+    public List<Booking> findByRoomId(Integer roomId) {
+        return bookingRepository.findByRoomIdOrderByCheckInAsc(roomId);
+    }
+
     public void delete(Integer id) {
         if (!bookingRepository.existsById(id)) {
             throw new RuntimeException("Booking not found with id: " + id);

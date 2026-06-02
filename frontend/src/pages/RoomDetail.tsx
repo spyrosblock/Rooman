@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
 import { Box, Container, Typography, Paper, Button, Chip, Divider, CircularProgress, Snackbar, Alert } from '@mui/material'
-import { Edit, ArrowBack, Delete } from '@mui/icons-material'
+import { Edit, ArrowBack, Delete, Visibility } from '@mui/icons-material'
 import { Link as RouterLink, useParams, useNavigate } from 'react-router-dom'
 import NavBar from '../components/NavBar'
-import type { Room } from '../types'
+import type { Room, Booking } from '../types'
 
 export default function RoomDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [room, setRoom] = useState<Room | null>(null)
+  const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+  const [bookingsLoading, setBookingsLoading] = useState(true)
   const [deleteError, setDeleteError] = useState(false)
 
   useEffect(() => {
@@ -21,6 +23,17 @@ export default function RoomDetail() {
       .then((data) => setRoom(data))
       .catch(() => setRoom(null))
       .finally(() => setLoading(false))
+  }, [id])
+
+  useEffect(() => {
+    fetch(`/api/rooms/${id}/bookings`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to load bookings')
+        return res.json()
+      })
+      .then((data) => setBookings(data))
+      .catch(() => setBookings([]))
+      .finally(() => setBookingsLoading(false))
   }, [id])
 
   if (loading) {
@@ -137,6 +150,94 @@ export default function RoomDetail() {
               Delete Room
             </Button>
           </Box>
+
+          <Divider sx={{ my: 4 }} />
+
+          <Typography variant="h5" sx={{ fontWeight: 300, mb: 3 }}>
+            Bookings
+          </Typography>
+
+          {bookingsLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : bookings.length === 0 ? (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 4,
+                borderRadius: 2,
+                border: (theme) => `1px solid ${theme.palette.divider}`,
+                textAlign: 'center',
+              }}
+            >
+              <Typography sx={{ color: 'text.secondary' }}>
+                No bookings for this room yet.
+              </Typography>
+            </Paper>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {bookings.map((booking) => (
+                <Paper
+                  key={booking.id}
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    border: (theme) => `1px solid ${theme.palette.divider}`,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                      {booking.guestName}
+                    </Typography>
+                    <Chip
+                      label={booking.status}
+                      size="small"
+                      color={
+                        booking.status === 'confirmed' ? 'success' :
+                        booking.status === 'pending' ? 'warning' :
+                        booking.status === 'cancelled' ? 'error' :
+                        'info'
+                      }
+                      sx={{ fontWeight: 500, textTransform: 'capitalize', fontSize: '0.75rem' }}
+                    />
+                  </Box>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, mb: 1.5 }}>
+                    <Box sx={{ flex: '1 1 100px' }}>
+                      <Typography sx={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'text.secondary' }}>
+                        Check-in
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.85rem' }}>{booking.checkIn}</Typography>
+                    </Box>
+                    <Box sx={{ flex: '1 1 100px' }}>
+                      <Typography sx={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'text.secondary' }}>
+                        Check-out
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.85rem' }}>{booking.checkOut}</Typography>
+                    </Box>
+                    <Box sx={{ flex: '1 1 80px' }}>
+                      <Typography sx={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'text.secondary' }}>
+                        Total
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 500 }}>€{booking.total}</Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                      component={RouterLink}
+                      to={`/bookings/${booking.id}`}
+                      size="small"
+                      startIcon={<Visibility />}
+                      sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+                    >
+                      View Details
+                    </Button>
+                  </Box>
+                </Paper>
+              ))}
+            </Box>
+          )}
         </Paper>
       </Container>
 

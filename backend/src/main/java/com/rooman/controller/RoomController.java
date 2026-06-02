@@ -1,6 +1,8 @@
 package com.rooman.controller;
 
+import com.rooman.model.Booking;
 import com.rooman.model.Room;
+import com.rooman.service.BookingService;
 import com.rooman.service.RoomService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -15,9 +17,11 @@ import java.util.List;
 public class RoomController {
 
     private final RoomService roomService;
+    private final BookingService bookingService;
 
-    public RoomController(RoomService roomService) {
+    public RoomController(RoomService roomService, BookingService bookingService) {
         this.roomService = roomService;
+        this.bookingService = bookingService;
     }
 
     @GetMapping
@@ -29,6 +33,11 @@ public class RoomController {
     public ResponseEntity<List<Room>> getAvailableRooms(@RequestParam("date") String date) {
         LocalDate localDate = LocalDate.parse(date);
         return ResponseEntity.ok(roomService.findAvailableRooms(localDate));
+    }
+
+    @GetMapping("/{id}/bookings")
+    public ResponseEntity<List<Booking>> getRoomBookings(@PathVariable Integer id) {
+        return ResponseEntity.ok(bookingService.findByRoomId(id));
     }
 
     @GetMapping("/{id}")

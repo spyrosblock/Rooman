@@ -62,12 +62,11 @@ export default function BookingDetail() {
       <NavBar />
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         <Button
-          component={RouterLink}
-          to="/bookings"
+          onClick={() => navigate(-1)}
           startIcon={<ArrowBack />}
           sx={{ mb: 3, textTransform: 'none' }}
         >
-          Back to Bookings
+          Back
         </Button>
 
         <Paper
