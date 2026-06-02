@@ -3,6 +3,7 @@ import { Box, Container, Typography, Paper, Button, Chip, Divider, CircularProgr
 import { Edit, ArrowBack, Delete, Visibility } from '@mui/icons-material'
 import { Link as RouterLink, useParams, useNavigate } from 'react-router-dom'
 import NavBar from '../components/NavBar'
+import PageLoading from '../components/PageLoading'
 import type { Room, Booking } from '../types'
 
 export default function RoomDetail() {
@@ -37,14 +38,7 @@ export default function RoomDetail() {
   }, [id])
 
   if (loading) {
-    return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        <NavBar />
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}>
-          <CircularProgress />
-        </Box>
-      </Box>
-    )
+    return <PageLoading />
   }
 
   if (!room) {

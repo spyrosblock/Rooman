@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Box, Container, Typography, Paper, Button, Chip, CircularProgress } from '@mui/material'
+import { Box, Container, Typography, Paper, Button, Chip } from '@mui/material'
 import { Add, Edit, Visibility } from '@mui/icons-material'
 import { Link as RouterLink } from 'react-router-dom'
 import NavBar from '../components/NavBar'
+import PageLoading from '../components/PageLoading'
 import type { Room } from '../types'
 
 export default function RoomList() {
@@ -18,14 +19,7 @@ export default function RoomList() {
   }, [])
 
   if (loading) {
-    return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        <NavBar />
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}>
-          <CircularProgress />
-        </Box>
-      </Box>
-    )
+    return <PageLoading />
   }
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
