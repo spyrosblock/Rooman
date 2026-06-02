@@ -1,4 +1,4 @@
-import { Box, Typography, Paper } from '@mui/material'
+import { Typography, Paper } from '@mui/material'
 import type { Room } from '../../types'
 
 interface Props {
