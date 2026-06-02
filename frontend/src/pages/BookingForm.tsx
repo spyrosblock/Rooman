@@ -1,25 +1,15 @@
 import { useState, useEffect } from 'react'
 import {
-  Box, Container, Typography, Paper, Button, TextField, MenuItem, CircularProgress, Alert,
+  Box, Container, Typography, Paper, Button, Alert,
 } from '@mui/material'
 import { ArrowBack, Save } from '@mui/icons-material'
 import { Link as RouterLink, useParams, useNavigate } from 'react-router-dom'
-import { DatePicker } from '@mui/x-date-pickers/DatePicker'
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 import NavBar from '../components/NavBar'
+import PageLoading from '../components/PageLoading'
+import { BookingFormFields, BookingPriceSummary } from './booking-form'
+import type { FormFieldValues, FormErrors } from './booking-form'
 import type { Room } from '../types'
-
-const statuses = ['confirmed', 'pending', 'cancelled', 'completed']
-
-interface FormErrors {
-  guestName?: string
-  email?: string
-  phone?: string
-  roomId?: string
-  guests?: string
-  checkIn?: string
-  checkOut?: string
-}
 
 export default function BookingForm() {
   const { id } = useParams()
@@ -27,15 +17,6 @@ export default function BookingForm() {
   const isEdit = Boolean(id)
 
   const [rooms, setRooms] = useState<Room[]>([])
-  const [guestName, setGuestName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [roomId, setRoomId] = useState<number | ''>('')
-  const [guests, setGuests] = useState(2)
-  const [checkIn, setCheckIn] = useState<Dayjs | null>(dayjs().add(1, 'day'))
-  const [checkOut, setCheckOut] = useState<Dayjs | null>(dayjs().add(3, 'day'))
-  const [status, setStatus] = useState('pending')
-  const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(isEdit)
   const [roomsLoading, setRoomsLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -43,12 +24,24 @@ export default function BookingForm() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
+  const [values, setValues] = useState<FormFieldValues>({
+    guestName: '',
+    email: '',
+    phone: '',
+    roomId: '',
+    guests: 2,
+    checkIn: dayjs().add(1, 'day'),
+    checkOut: dayjs().add(3, 'day'),
+    status: 'pending',
+    notes: '',
+  })
+
   useEffect(() => {
     fetch('/api/rooms')
       .then((res) => res.json())
       .then((data: Room[]) => {
         setRooms(data)
-        if (data.length > 0 && !isEdit) setRoomId(data[0].id)
+        if (data.length > 0 && !isEdit) setValues((prev) => ({ ...prev, roomId: data[0].id }))
       })
       .catch(() => setError('Failed to load rooms'))
       .finally(() => setRoomsLoading(false))
@@ -62,66 +55,68 @@ export default function BookingForm() {
         return res.json()
       })
       .then((booking) => {
-        setGuestName(booking.guestName)
-        setEmail(booking.email)
-        setPhone(booking.phone ?? '')
-        setRoomId(booking.roomId)
-        setGuests(booking.guests)
-        setCheckIn(dayjs(booking.checkIn))
-        setCheckOut(dayjs(booking.checkOut))
-        setStatus(booking.status)
-        setNotes(booking.notes ?? '')
+        setValues({
+          guestName: booking.guestName,
+          email: booking.email,
+          phone: booking.phone ?? '',
+          roomId: booking.roomId,
+          guests: booking.guests,
+          checkIn: dayjs(booking.checkIn),
+          checkOut: dayjs(booking.checkOut),
+          status: booking.status,
+          notes: booking.notes ?? '',
+        })
       })
       .catch(() => navigate('/bookings'))
       .finally(() => setLoading(false))
   }, [id, isEdit, navigate])
 
-  const selectedRoom = rooms.find((r) => r.id === roomId)
-  const nights = checkIn && checkOut ? checkOut.diff(checkIn, 'day') : 0
+  const selectedRoom = rooms.find((r) => r.id === values.roomId)
+  const nights = values.checkIn && values.checkOut ? values.checkOut.diff(values.checkIn, 'day') : 0
   const total = selectedRoom ? selectedRoom.price * Math.max(0, nights) : 0
 
   const validate = (): FormErrors => {
     const errs: FormErrors = {}
 
-    if (!guestName.trim()) {
+    if (!values.guestName.trim()) {
       errs.guestName = 'Guest name is required'
-    } else if (guestName.trim().length < 2) {
+    } else if (values.guestName.trim().length < 2) {
       errs.guestName = 'Guest name must be at least 2 characters'
     }
 
-    if (!email.trim()) {
+    if (!values.email.trim()) {
       errs.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
       errs.email = 'Please enter a valid email address'
     }
 
-    if (phone.trim() && !/^[+\d\s\-()]{7,20}$/.test(phone)) {
+    if (values.phone.trim() && !/^[+\d\s\-()]{7,20}$/.test(values.phone)) {
       errs.phone = 'Please enter a valid phone number'
     }
 
-    if (roomId === '') {
+    if (values.roomId === '') {
       errs.roomId = 'Please select a room'
     }
 
-    if (!guests || guests < 1) {
+    if (!values.guests || values.guests < 1) {
       errs.guests = 'At least 1 guest is required'
-    } else if (selectedRoom && guests > selectedRoom.capacity) {
+    } else if (selectedRoom && values.guests > selectedRoom.capacity) {
       errs.guests = `Maximum ${selectedRoom.capacity} guests allowed for this room`
     }
 
-    if (!checkIn) {
+    if (!values.checkIn) {
       errs.checkIn = 'Check-in date is required'
     }
 
-    if (!checkOut) {
+    if (!values.checkOut) {
       errs.checkOut = 'Check-out date is required'
     }
 
-    if (checkIn && checkOut) {
-      if (!checkOut.isAfter(checkIn)) {
+    if (values.checkIn && values.checkOut) {
+      if (!values.checkOut.isAfter(values.checkIn)) {
         errs.checkOut = 'Check-out must be after check-in'
       }
-      if (checkIn.isBefore(dayjs(), 'day') && !isEdit) {
+      if (values.checkIn.isBefore(dayjs(), 'day') && !isEdit) {
         errs.checkIn = 'Check-in cannot be in the past'
       }
     }
@@ -134,7 +129,12 @@ export default function BookingForm() {
     setErrors(validate())
   }
 
-  const handleSubmit = async (e: React.SubmitEvent) => {
+  const handleChange = (field: string, value: unknown) => {
+    setValues((prev) => ({ ...prev, [field]: value }))
+    if (touched[field]) setErrors(validate())
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     setError('')
@@ -157,16 +157,16 @@ export default function BookingForm() {
     }
 
     const body = {
-      guestName: guestName.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      roomId,
-      guests,
-      checkIn: checkIn!.format('YYYY-MM-DD'),
-      checkOut: checkOut!.format('YYYY-MM-DD'),
-      status,
+      guestName: values.guestName.trim(),
+      email: values.email.trim(),
+      phone: values.phone.trim(),
+      roomId: values.roomId,
+      guests: values.guests,
+      checkIn: values.checkIn!.format('YYYY-MM-DD'),
+      checkOut: values.checkOut!.format('YYYY-MM-DD'),
+      status: values.status,
       total,
-      notes,
+      notes: values.notes,
     }
 
     try {
@@ -196,14 +196,7 @@ export default function BookingForm() {
   }
 
   if (loading || roomsLoading) {
-    return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        <NavBar />
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}>
-          <CircularProgress />
-        </Box>
-      </Box>
-    )
+    return <PageLoading />
   }
 
   return (
@@ -238,157 +231,16 @@ export default function BookingForm() {
           )}
 
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-            <TextField
-              label="Guest Name"
-              value={guestName}
-              onChange={(e) => setGuestName(e.target.value)}
-              onBlur={() => handleBlur('guestName')}
-              error={touched.guestName && Boolean(errors.guestName)}
-              helperText={touched.guestName && errors.guestName ? errors.guestName : ' '}
-              fullWidth
-              required
+            <BookingFormFields
+              values={values}
+              rooms={rooms}
+              errors={errors}
+              touched={touched}
+              onChange={handleChange}
+              onBlur={handleBlur}
             />
 
-            <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
-              <TextField
-                label="Email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onBlur={() => handleBlur('email')}
-                error={touched.email && Boolean(errors.email)}
-                helperText={touched.email && errors.email ? errors.email : ' '}
-                fullWidth
-                required
-              />
-              <TextField
-                label="Phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                onBlur={() => handleBlur('phone')}
-                error={touched.phone && Boolean(errors.phone)}
-                helperText={touched.phone && errors.phone ? errors.phone : ' '}
-                fullWidth
-              />
-            </Box>
-
-            <TextField
-              label="Room"
-              value={roomId}
-              onChange={(e) => setRoomId(Number(e.target.value))}
-              onBlur={() => handleBlur('roomId')}
-              error={touched.roomId && Boolean(errors.roomId)}
-              helperText={touched.roomId && errors.roomId ? errors.roomId : ' '}
-              select
-              fullWidth
-              required
-            >
-              {rooms.map((room) => (
-                <MenuItem key={room.id} value={room.id}>
-                  {room.name} — €{room.price}/night
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              label="Number of Guests"
-              type="number"
-              value={guests}
-              onChange={(e) => setGuests(Number(e.target.value))}
-              onBlur={() => handleBlur('guests')}
-              error={touched.guests && Boolean(errors.guests)}
-              helperText={touched.guests && errors.guests ? errors.guests : ' '}
-              fullWidth
-              required
-              slotProps={{
-                htmlInput: {
-                  min: 1,
-                  max: selectedRoom?.capacity ?? 10,
-                },
-              }}
-            />
-
-            <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
-              <DatePicker
-                label="Check-in"
-                value={checkIn}
-                onChange={(d) => {
-                  setCheckIn(d)
-                  if (touched.checkIn) setErrors(validate())
-                }}
-                minDate={dayjs()}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    required: true,
-                    error: touched.checkIn && Boolean(errors.checkIn),
-                    helperText: touched.checkIn && errors.checkIn ? errors.checkIn : ' ',
-                    onBlur: () => handleBlur('checkIn'),
-                  },
-                }}
-              />
-              <DatePicker
-                label="Check-out"
-                value={checkOut}
-                onChange={(d) => {
-                  setCheckOut(d)
-                  if (touched.checkOut) setErrors(validate())
-                }}
-                minDate={checkIn ? checkIn.add(1, 'day') : dayjs().add(1, 'day')}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    required: true,
-                    error: touched.checkOut && Boolean(errors.checkOut),
-                    helperText: touched.checkOut && errors.checkOut ? errors.checkOut : ' ',
-                    onBlur: () => handleBlur('checkOut'),
-                  },
-                }}
-              />
-            </Box>
-
-            <TextField
-              label="Status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              select
-              fullWidth
-            >
-              {statuses.map((s) => (
-                <MenuItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              label="Notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              multiline
-              rows={2}
-              fullWidth
-            />
-
-            {nights > 0 && (
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  borderRadius: 2,
-                  border: (theme) => `1px solid ${theme.palette.divider}`,
-                  bgcolor: 'rgba(170, 59, 255, 0.04)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <Typography sx={{ fontSize: '0.9rem' }}>
-                  {nights} night{nights > 1 ? 's' : ''} × €{selectedRoom?.price}
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 400 }}>
-                  €{total}
-                </Typography>
-              </Paper>
-            )}
+            <BookingPriceSummary nights={nights} room={selectedRoom} total={total} />
 
             <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
               <Button
