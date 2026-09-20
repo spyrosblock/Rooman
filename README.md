@@ -7,6 +7,14 @@
 
 ---
 
+## Demo
+
+[![Rooman demo video](https://img.youtube.com/vi/RgUX99jKPLY/hqdefault.jpg)](https://youtu.be/RgUX99jKPLY)
+
+▶️ [Watch the demo on YouTube](https://youtu.be/RgUX99jKPLY)
+
+---
+
 ## Public Features (no login required)
 
 - **Availability Checker** — Visitors pick a date on the landing page and instantly see which rooms are free, along with room type, capacity, and price per night.
